@@ -12,9 +12,10 @@ class Home extends Component {
         this.state = {
             movies: [],
             category: [],
-            filter: [],
             DefaultLike: false,
-            LikeDislike: []
+            LikeDislike: [],
+            DefaultFilter: false,
+            filter: []
         }
 
     }
@@ -28,10 +29,10 @@ class Home extends Component {
                     {
                         if (!this.state.category.find(element => element === this.state.movies[i].category)) {
                             this.setState({category: [...this.state.category, this.state.movies[i].category]})
+                            this.setState({filter: [...this.state.filter, false]})
                         }
 
                         this.setState({LikeDislike: [...this.state.LikeDislike, false]})
-                        console.log(this.state.LikeDislike)
                     }
                 })
             })
@@ -47,49 +48,79 @@ class Home extends Component {
         this.setState({movies: new_tab})
     }
 
-    FilterChange = (name) => {
-        if (!this.state.category.find(element => element === name)) {
-            this.state.filter.push(name)
-            let id_supp = this.state.filter.indexOf(name)
-            delete this.state.filter[id_supp]
-        } else {
-            this.state.filter.push(name)
-        }
-
-        console.log(this.state.filter)
-    }
-
     HandleChangeLikeDislike = (id) => {
         let id_like = parseInt(id) - 1;
-        console.log(id_like)
         if(this.state.LikeDislike[id_like] === false) {
             this.state.LikeDislike[id_like] = true; //like
-            let last_number_like = parseInt(this.state.movies[id_like].likes)
-            let last_array = this.state.movies;
-            this.setState({movies: {}})
-            this.setState({movies: last_array})
-            this.state.movies[id_like].likes = last_number_like + 1;
+                let last_number_like = parseInt(this.state.movies[id_like].likes)
+                let last_array = this.state.movies;
+                    this.setState({movies: {}})
+                    this.setState({movies: last_array})
+                    this.state.movies[id_like].likes = last_number_like + 1;
         } else {
             this.state.LikeDislike[id_like] = false; //dislike
-            let last_number_like = parseInt(this.state.movies[id_like].likes)
-            let last_array = this.state.movies;
-            this.setState({movies: {}})
-            this.setState({movies: last_array})
-            this.state.movies[id_like].likes = last_number_like - 1;
+                let last_number_like = parseInt(this.state.movies[id_like].likes)
+                let last_array = this.state.movies;
+                    this.setState({movies: {}})
+                    this.setState({movies: last_array})
+                    this.state.movies[id_like].likes = last_number_like - 1;
         }
 
     }
+
+    FilterChange = (number) => {
+
+        let movies_after_filter = []
+
+        if(this.state.filter[number] === false) {
+            this.state.filter[number] = true; //active filter
+            console.log(this.state.filter[number])
+        } else {
+            this.state.filter[number] = false; //desactive filter
+        }
+
+        for (let i = 0; i < this.state.filter.length; i++) {
+            if(this.state.filter[i] === true) {
+                let id_status = this.state.filter[i];
+                let category = this.state.category[i];
+                    for (let i = 0; i < this.state.movies.length; i++) {
+                        if(this.state.movies[i].category === category) {
+                            movies_after_filter.push(this.state.movies[i])
+                        }
+                    }
+            }
+            this.setState({movies: {}})
+            this.setState({movies: movies_after_filter})
+        }
+    }
+
+    HandlePaginate = event => {
+        console.log(event.target.value)
+
+        //
+    }
+
 
     render() {
         return (
             <div className="Home">
                 {
-                    this.state.category.map((name) => {
-                        return ( <label><input type="checkbox" onChange={() => { this.FilterChange({name})}} name={name}></input>{name}</label> );
+                    this.state.category.map((i, number) => {
+                        return ( <label>
+                                    <Toggle id='cheese-status'
+                                                defaultChecked={this.state.DefaultFilter}
+                                                onChange={() => {this.FilterChange(number)}} />
+                                                {i}
+                                 </label> );
                     })
                 }
+                <select onChange={this.HandlePaginate}>
+                    <option>4</option>
+                    <option>8</option>
+                    <option>12</option>
+                </select>
                 <div className="row">
-                {
+                    {
                     this.state.movies.map(function(i) {
 
                         return ( <div className="column">
@@ -108,7 +139,7 @@ class Home extends Component {
                                         defaultChecked={this.state.DefaultLike}
                                         onChange={() => {this.HandleChangeLikeDislike(i.id)}} />
 
-                                    <div><button onClick={() => { this.DeleteCard(i.id) }} >X</button></div>
+                                    <div><button onClick={() => { this.DeleteCard(i.id) }}>X</button></div>
                                 </div>
                                 </div> );
                     }, this)
